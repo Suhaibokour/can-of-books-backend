@@ -11,6 +11,8 @@ server.use(cors());
 
 const PORT = process.env.PORT;
 
+server.use(express.json());
+
 
 // mongoDB
 
@@ -21,6 +23,7 @@ main().catch(err => console.log(err));
 let Book;
 
 async function main() {
+    // await mongoose.connect(process.env.MONGO_URL);
     await mongoose.connect('mongodb://localhost:27017/books');
 
     const bookSchema = new mongoose.Schema({
@@ -65,6 +68,10 @@ async function seedData(){
 
 
 // routes 
+server.delete('/deleteBooks/:id',deleteBookHandler)
+
+server.post('/addBooks',addBookHandler)
+
 server.get('/getBooks', getBooksHandler);
 
 server.get('/', homeHandler);
@@ -85,6 +92,35 @@ res.send(result);
     })
      
 }
+
+
+async function addBookHandler(req,res){
+    const title = req.body.title;
+    const email=req.body.email;
+    const status=req.body.status;
+
+    await Book.create({
+      title:title,
+      email:email,
+      status:status  
+    })
+
+    Book.find({email:email},(err,result)=>{
+        res.send(result);
+            })
+}
+
+
+function deleteBookHandler(req,res){
+const bookId=req.params.id;
+const email=req.query.email;
+Book.deleteOne({_id:bookId},(err,result)=>{
+    Book.find({email:email},(err,result)=>{
+        res.send(result);
+            })
+})
+}
+
 
 server.listen(PORT, () => {
     console.log(`listening on ${PORT}`);
