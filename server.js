@@ -68,6 +68,8 @@ async function seedData(){
 
 
 // routes 
+server.put('/updatebooks/:id',updateBooksHandler)
+
 server.delete('/deleteBooks/:id',deleteBookHandler)
 
 server.post('/addBooks',addBookHandler)
@@ -96,11 +98,13 @@ res.send(result);
 
 async function addBookHandler(req,res){
     const title = req.body.title;
+    const description=req.body.description;
     const email=req.body.email;
     const status=req.body.status;
 
     await Book.create({
       title:title,
+      description:description,
       email:email,
       status:status  
     })
@@ -121,6 +125,18 @@ Book.deleteOne({_id:bookId},(err,result)=>{
 })
 }
 
+
+function updateBooksHandler(req,res){
+    const id = req.params.id;
+    const {title,description,status,email}=req.body;
+
+    Book.findByIdAndUpdate(id,{title,description,status,email},(err,result)=>{
+        Book.find({email:email},(err,result)=>{
+            res.send(result)
+                })
+
+    })
+}
 
 server.listen(PORT, () => {
     console.log(`listening on ${PORT}`);
